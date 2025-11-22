@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brand Ambassador Certificate Verification</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 40px;
+    }
+    input {
+      padding: 10px;
+      width: 260px;
+      margin-right: 10px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    #result {
+      margin-top: 25px;
+      font-size: 18px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: left;
+    }
+    p {
+      margin: 6px 0;
+    }
+    .valid {
+      color: green;
+      font-weight: bold;
+    }
+    .invalid {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Logo -->
+  <div style="text-align:center; margin-bottom:20px;">
+    <img src="logo.png" width="250" height="100" alt="Career Direction Logo">
+  </div>
+
+  <h1>Brand Ambassador Certificate Verification</h1>
+
+  <p style="margin-top: 10px; margin-bottom: 20px;">
+    Enter your Brand Ambassador Certificate ID below.
+  </p>
+
+  <input 
+    type="text" 
+    id="certID" 
+    placeholder="Enter Cert-ID (CDAMBR2025-001)"
+  />
+  <button onclick="verify()">Verify</button>
+
+  <div id="result"></div>
+
+<script>
+  const WORKER_URL = "https://ambassador-verification.cd-careerdirection.workers.dev";
+
+  async function verify() {
+    const certID = document.getElementById("certID").value.trim();
+    const resultDiv = document.getElementById("result");
+
+    if (!certID) {
+      resultDiv.innerHTML = "<p class='invalid'>Please enter a Certificate ID.</p>";
+      return;
+    }
+
+    resultDiv.innerHTML = "<em>Checking…</em>";
+
+    try {
+      const response = await fetch(`${WORKER_URL}/?id=${encodeURIComponent(certID)}`);
+      const data = await response.json();
+
+      if (data && data.id) {
+
+        resultDiv.innerHTML = `
+          <p class="valid">✔ Brand Ambassador Certificate Verified</p>
+
+          <p><strong>Name:</strong> ${data.name}</p>
+          <p><strong>Certificate ID:</strong> ${data.id}</p>
+          <p><strong>Program:</strong> ${data.program}</p>
+
+          <p><strong>Organization / College:</strong> ${data["clg-org"]}</p>
+
+          <p><strong>Location:</strong> ${data.location}</p>
+          <p><strong>Issuer:</strong> ${data.issuer}</p>
+          <p><strong>Status:</strong> ${data.status}</p>
+
+          <hr>
+          <p style="font-size:20px; font-weight:bold; color:#444; text-align:center;">
+            😊 Wish You Continued Success!
+          </p>
+        `;
+
+      } else {
+        resultDiv.innerHTML = "<p class='invalid'>❌ Certificate not found or invalid.</p>";
+      }
+
+    } catch (err) {
+      resultDiv.innerHTML = "<p class='invalid'>Error contacting server.</p>";
+    }
+  }
+
+  // Auto-fill from QR Code
+  const qrID = new URLSearchParams(window.location.search).get("id");
+  if (qrID) {
+    document.getElementById("certID").value = qrID;
+    verify();
+  }
+</script>
+
+</body>
+</html>
